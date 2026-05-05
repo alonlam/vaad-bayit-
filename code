@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ועד בית">
+<meta name="theme-color" content="#1a5c38">
+<title>ועד בית – רמב"ם 12</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a5c38;
+    --green-light: #e8f4ed;
+    --green-mid: #2d7a50;
+    --accent: #f0a500;
+    --red: #c0392b;
+    --red-light: #fdecea;
+    --yellow: #e67e22;
+    --yellow-light: #fef3e2;
+    --bg: #f4f1eb;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --sub: #6b7280;
+    --border: #e2ddd5;
+    --radius: 16px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; max-width: 430px; margin: 0 auto; min-height: 100vh; overflow-x: hidden; }
+
+/* SCREENS */
+.screen { display: none; flex-direction: column; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* LOGIN */
+.login-header { background: var(–green); padding: 60px 28px 40px; text-align: center; }
+.login-header .building-icon { font-size: 56px; margin-bottom: 12px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2)); }
+.login-header h1 { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+.login-header p { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 6px; }
+.login-body { background: var(–bg); border-radius: 28px 28px 0 0; margin-top: -20px; padding: 32px 24px; flex: 1; }
+.login-tabs { display: flex; background: #e8e4dc; border-radius: 14px; padding: 4px; margin-bottom: 28px; }
+.login-tab { flex: 1; padding: 10px; text-align: center; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; color: var(–sub); border: none; background: transparent; }
+.login-tab.active { background: #fff; color: var(–text); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.role-card { background: var(–card); border-radius: var(–radius); padding: 20px; margin-bottom: 14px; cursor: pointer; border: 2px solid var(–border); transition: all 0.2s; display: flex; align-items: center; gap: 16px; }
+.role-card:active { transform: scale(0.98); }
+.role-card.selected { border-color: var(–green); background: var(–green-light); }
+.role-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.role-icon.admin { background: linear-gradient(135deg, #1a5c38, #2d7a50); }
+.role-icon.tenant { background: linear-gradient(135deg, #2980b9, #3498db); }
+.role-info h3 { font-size: 16px; font-weight: 800; }
+.role-info p { font-size: 12px; color: var(–sub); margin-top: 2px; }
+.pass-field { margin-top: 20px; }
+.pass-field label { font-size: 13px; font-weight: 700; color: var(–sub); display: block; margin-bottom: 8px; }
+.pass-field input { width: 100%; padding: 14px 16px; border: 2px solid var(–border); border-radius: 14px; font-size: 16px; font-family: ‘Heebo’, sans-serif; background: #fafaf8; outline: none; text-align: right; transition: border-color 0.2s; }
+.pass-field input:focus { border-color: var(–green); }
+.login-error { background: var(–red-light); color: var(–red); font-size: 13px; font-weight: 600; padding: 10px 14px; border-radius: 10px; margin-top: 12px; text-align: center; display: none; }
+.login-error.show { display: block; }
+
+/* BUTTONS */
+.btn { width: 100%; padding: 16px; border: none; border-radius: 14px; font-family: ‘Heebo’, sans-serif; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; margin-top: 14px; }
+.btn-primary { background: var(–green); color: #fff; box-shadow: 0 4px 16px rgba(26,92,56,0.3); }
+.btn-primary:active { transform: scale(0.98); background: var(–green-mid); }
+.btn-secondary { background: var(–green-light); color: var(–green); }
+.btn-danger { background: var(–red-light); color: var(–red); }
+.btn-sm { padding: 9px 16px; font-size: 13px; width: auto; margin-top: 0; border-radius: 10px; }
+
+/* APP SHELL */
+.app-shell { display: none; flex-direction: column; height: 100vh; }
+.app-shell.active { display: flex; }
+.top-bar { background: var(–green); padding: 12px 18px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.top-bar-title { font-size: 17px; font-weight: 800; color: #fff; }
+.top-bar-sub { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 1px; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
+.page-content { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
+.bottom-nav { background: #fff; border-top: 1px solid var(–border); display: flex; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom); }
+.nav-item { flex: 1; padding: 10px 0 8px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; border: none; background: transparent; }
+.nav-icon { font-size: 22px; }
+.nav-label { font-size: 10px; font-weight: 700; color: var(–sub); font-family: ‘Heebo’, sans-serif; }
+.nav-item.active .nav-label { color: var(–green); }
+.nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(–green); }
+
+/* CARDS */
+.card { background: var(–card); border-radius: var(–radius); padding: 16px; margin-bottom: 12px; box-shadow: var(–shadow); }
+.card-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+.card-sub { font-size: 12px; color: var(–sub); }
+
+/* STATUS BADGES */
+.badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-open { background: var(–red-light); color: var(–red); }
+.badge-progress { background: var(–yellow-light); color: var(–yellow); }
+.badge-closed { background: var(–green-light); color: var(–green); }
+
+/* STATS GRID */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.stat-card { background: var(–card); border-radius: 14px; padding: 14px 10px; text-align: center; box-shadow: var(–shadow); }
+.stat-val { font-size: 24px; font-weight: 900; }
+.stat-label { font-size: 10px; color: var(–sub); margin-top: 3px; line-height: 1.3; }
+
+/* QUICK ACTIONS */
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.quick-btn { background: var(–green-light); border: none; border-radius: 12px; padding: 12px 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: all 0.15s; }
+.quick-btn:active { transform: scale(0.95); }
+.quick-btn span:first-child { font-size: 22px; }
+.quick-btn span:last-child { font-size: 11px; font-weight: 700; color: var(–green); font-family: ‘Heebo’, sans-serif; }
+
+/* SECTION HEADER */
+.section-header { display: flex; justify-content: space-between; align-items: center; margin: 20px 0 10px; }
+.section-title { font-size: 15px; font-weight: 800; }
+
+/* ISSUE CARD */
+.issue-card { background: var(–card); border-radius: var(–radius); padding: 14px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(–shadow); cursor: pointer; transition: all 0.15s; }
+.issue-card:active { transform: scale(0.99); }
+.issue-info { flex: 1 }
+.issue-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.issue-meta { font-size: 11px; color: var(–sub); }
+.issue-arrow { font-size: 14px; color: #ccc; margin-right: 8px; }
+
+/* FORMS */
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 13px; font-weight: 700; color: var(–sub); display: block; margin-bottom: 7px; }
+.form-input { width: 100%; padding: 13px 14px; border: 2px solid var(–border); border-radius: 12px; font-size: 15px; font-family: ‘Heebo’, sans-serif; background: #fafaf8; outline: none; text-align: right; direction: rtl; transition: border-color 0.2s; }
+.form-input:focus { border-color: var(–green); }
+.form-select { width: 100%; padding: 13px 14px; border: 2px solid var(–border); border-radius: 12px; font-size: 15px; font-family: ‘Heebo’, sans-serif; background: #fafaf8; outline: none; text-align: right; direction: rtl; appearance: none; }
+textarea.form-input { height: 80px; resize: none; }
+
+/* PHOTO BTN */
+.photo-btn { width: 100%; padding: 14px; border: 2px dashed var(–border); border-radius: 14px; background: transparent; font-family: ‘Heebo’, sans-serif; font-size: 14px; color: var(–sub); cursor: pointer; }
+
+/* FILTER PILLS */
+.filter-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-pill { padding: 7px 14px; border-radius: 20px; border: none; background: #fff; color: var(–sub); font-weight: 600; font-size: 12px; cursor: pointer; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.08); font-family: ‘Heebo’, sans-serif; }
+.filter-pill.active { background: var(–green); color: #fff; }
+
+/* SUPPLIER CARD */
+.supplier-card { background: var(–card); border-radius: var(–radius); padding: 16px; margin-bottom: 12px; box-shadow: var(–shadow); }
+.supplier-name { font-size: 15px; font-weight: 800; margin-bottom: 2px; }
+.supplier-service { font-size: 12px; color: var(–sub); margin-bottom: 12px; }
+.supplier-actions { display: flex; gap: 8px; }
+.supplier-btn { flex: 1; padding: 10px 0; border: none; border-radius: 10px; font-family: ‘Heebo’, sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; }
+.supplier-btn-call { background: var(–green); color: #fff; }
+.supplier-btn-pay { background: var(–green-light); color: var(–green); }
+
+/* PAYMENT CARD */
+.payment-card { background: var(–card); border-radius: var(–radius); padding: 14px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(–shadow); }
+.payment-amount { font-size: 16px; font-weight: 900; color: var(–green); }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-end; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(–bg); border-radius: 24px 24px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px 20px 40px; animation: slideUp 0.25s ease; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle { width: 40px; height: 4px; background: var(–border); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-size: 18px; font-weight: 900; margin-bottom: 20px; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: #fff; padding: 12px 22px; border-radius: 24px; font-size: 14px; font-weight: 600; z-index: 200; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.25); opacity: 0; transition: opacity 0.3s; pointer-events: none; font-family: ‘Heebo’, sans-serif; }
+.toast.show { opacity: 1; }
+
+/* DETAIL VIEW */
+.detail-header { background: var(–green); padding: 16px 18px 20px; display: flex; align-items: center; gap: 12px; }
+.back-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; font-size: 16px; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-family: ‘Heebo’, sans-serif; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.detail-title { font-size: 16px; font-weight: 800; color: #fff; }
+.detail-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+.info-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(–border); }
+.info-row:last-child { border-bottom: none; }
+.info-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.info-label { font-size: 12px; color: var(–sub); min-width: 52px; }
+.info-val { font-size: 13px; font-weight: 600; flex: 1; }
+
+/* STATUS SELECTOR */
+.status-btns { display: flex; gap: 8px; margin-top: 8px; }
+.status-btn { flex: 1; padding: 9px 4px; border-radius: 10px; border: 2px solid var(–border); background: #fff; font-family: ‘Heebo’, sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; }
+.status-btn.open.sel { border-color: var(–red); background: var(–red-light); color: var(–red); }
+.status-btn.progress.sel { border-color: var(–yellow); background: var(–yellow-light); color: var(–yellow); }
+.status-btn.closed.sel { border-color: var(–green); background: var(–green-light); color: var(–green); }
+
+/* PAYMENT SUMMARY */
+.pay-summary { background: var(–green); border-radius: var(–radius); padding: 18px 20px; margin-bottom: 16px; color: #fff; }
+.pay-total { font-size: 32px; font-weight: 900; }
+
+/* ADMIN SETTINGS */
+.settings-item { background: var(–card); border-radius: var(–radius); padding: 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(–shadow); cursor: pointer; }
+.settings-item-label { font-size: 14px; font-weight: 700; }
+.settings-item-sub { font-size: 12px; color: var(–sub); margin-top: 2px; }
+
+/* TENANT BIG BTN */
+.report-btn { width: 100%; padding: 22px; background: var(–green); color: #fff; border: none; border-radius: 20px; font-family: ‘Heebo’, sans-serif; font-size: 18px; font-weight: 900; cursor: pointer; box-shadow: 0 6px 24px rgba(26,92,56,0.35); display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px; }
+.report-btn:active { transform: scale(0.98); }
+
+/* INSTALL BANNER */
+.install-banner { background: var(–accent); padding: 12px 16px; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.install-banner-x { background: rgba(0,0,0,0.15); border: none; color: #fff; border-radius: 6px; padding: 2px 8px; cursor: pointer; font-family: ‘Heebo’, sans-serif; font-weight: 700; }
+
+.divider { height: 1px; background: var(–border); margin: 8px 0; }
+.chip { display: inline-block; background: var(–green-light); color: var(–green); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+</style>
+
+</head>
+<body>
+
+<!-- TOAST -->
+
+<div class="toast" id="toast"></div>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+
+<div class="screen active" id="screen-login">
+  <div class="login-header">
+    <div class="building-icon">🏢</div>
+    <h1>ועד בית</h1>
+    <p>בניין רמב"ם 12, תל אביב</p>
+  </div>
+  <div class="login-body">
+    <div style="font-size:14px;color:var(--sub);margin-bottom:20px;text-align:center;">בחר את סוג המשתמש שלך</div>
+
+```
+<div class="role-card" id="role-admin" onclick="selectRole('admin')">
+  <div class="role-icon admin">👑</div>
+  <div class="role-info">
+    <h3>ועד בית / אדמין</h3>
+    <p>ניהול מלא – תקלות, ספקים, תשלומים</p>
+  </div>
+</div>
+<div class="role-card" id="role-tenant" onclick="selectRole('tenant')">
+  <div class="role-icon tenant">🏠</div>
+  <div class="role-info">
+    <h3>דייר</h3>
+    <p>דיווח תקלות וצפייה בסטטוס</p>
+  </div>
+</div>
+
+<div class="pass-field">
+  <label id="pass-label">בחר סוג משתמש למעלה</label>
+  <input type="password" id="password-input" placeholder="••••••••" style="display:none" />
+  <div class="login-error" id="login-error">❌ סיסמה שגויה, נסה שנית</div>
+</div>
+
+<button class="btn btn-primary" onclick="doLogin()" style="display:none" id="login-btn">כנס לאפליקציה ←</button>
+
+<div style="text-align:center;margin-top:24px;font-size:11px;color:var(--sub);">
+  🔒 מערכת פנימית לדיירי הבניין בלבד
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ==================== ADMIN APP ==================== -->
+
+<div class="app-shell" id="app-admin">
+
+  <!-- INSTALL BANNER -->
+
+  <div class="install-banner" id="install-banner">
+    <span>📲</span>
+    <span style="flex:1">התקן על מסך הבית לגישה מהירה</span>
+    <button class="install-banner-x" onclick="document.getElementById('install-banner').style.display='none'">✕</button>
+  </div>
+
+  <div class="top-bar">
+    <div>
+      <div class="top-bar-title">👑 ועד בית</div>
+      <div class="top-bar-sub">בניין רמב"ם 12</div>
+    </div>
+    <div class="avatar" onclick="showScreen('screen-login')">יצ</div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+
+  <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+    <!-- Pages -->
+    <div class="page-content" id="page-home">
+      <!-- DASHBOARD -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--red)" id="stat-open">3</div>
+          <div class="stat-label">תקלות פתוחות</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--yellow)" id="stat-prog">1</div>
+          <div class="stat-label">בטיפול</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--green);font-size:16px" id="stat-money">₪3,470</div>
+          <div class="stat-label">הוצאות החודש</div>
+        </div>
+      </div>
+
+```
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:12px">⚡ פעולות מהירות</div>
+    <div class="quick-grid">
+      <button class="quick-btn" onclick="openModal('modal-new-issue')"><span>📋</span><span>+ תקלה</span></button>
+      <button class="quick-btn" onclick="openModal('modal-new-payment')"><span>💰</span><span>+ תשלום</span></button>
+      <button class="quick-btn" onclick="openModal('modal-new-supplier')"><span>👥</span><span>+ ספק</span></button>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <span class="section-title">🔴 תקלות אחרונות</span>
+    <span style="font-size:12px;color:var(--green);cursor:pointer;font-weight:700" onclick="switchTab('issues')">הכל ←</span>
+  </div>
+  <div id="home-issues-list"></div>
+</div>
+
+<div class="page-content" id="page-issues" style="display:none">
+  <div class="filter-bar" id="issue-filters">
+    <button class="filter-pill active" onclick="filterIssues('all',this)">הכל</button>
+    <button class="filter-pill" onclick="filterIssues('open',this)">פתוחות</button>
+    <button class="filter-pill" onclick="filterIssues('in_progress',this)">בטיפול</button>
+    <button class="filter-pill" onclick="filterIssues('closed',this)">סגורות</button>
+  </div>
+  <div id="issues-list"></div>
+  <button class="btn btn-primary" onclick="openModal('modal-new-issue')">+ תקלה חדשה</button>
+</div>
+
+<div class="page-content" id="page-suppliers" style="display:none">
+  <div id="suppliers-list"></div>
+  <button class="btn btn-primary" onclick="openModal('modal-new-supplier')">+ הוסף ספק</button>
+</div>
+
+<div class="page-content" id="page-payments" style="display:none">
+  <div class="pay-summary">
+    <div style="font-size:13px;opacity:0.8">סה"כ מאי 2026</div>
+    <div class="pay-total">₪3,470</div>
+    <div style="font-size:12px;opacity:0.7;margin-top:4px">4 תשלומים</div>
+  </div>
+  <div id="payments-list"></div>
+  <button class="btn btn-primary" style="margin-bottom:10px" onclick="openModal('modal-new-payment')">+ הוסף תשלום</button>
+  <button class="btn btn-secondary" onclick="showToast('📤 הדוח נשלח ל-WhatsApp!')">📤 ייצוא / שיתוף</button>
+</div>
+
+<div class="page-content" id="page-settings" style="display:none">
+  <div style="font-size:15px;font-weight:800;margin-bottom:16px">⚙️ הגדרות מנהל</div>
+  <div class="settings-item" onclick="openModal('modal-change-pass')">
+    <div><div class="settings-item-label">🔑 שנה סיסמת אדמין</div><div class="settings-item-sub">הסיסמה הנוכחית: ****</div></div>
+    <span style="color:var(--sub)">←</span>
+  </div>
+  <div class="settings-item" onclick="openModal('modal-change-tenant-pass')">
+    <div><div class="settings-item-label">🏠 שנה סיסמת דיירים</div><div class="settings-item-sub">סיסמה אחת משותפת לכל הדיירים</div></div>
+    <span style="color:var(--sub)">←</span>
+  </div>
+  <div class="settings-item" onclick="openModal('modal-building')">
+    <div><div class="settings-item-label">🏢 פרטי הבניין</div><div class="settings-item-sub">רמב"ם 12, תל אביב</div></div>
+    <span style="color:var(--sub)">←</span>
+  </div>
+  <div class="divider" style="margin:16px 0"></div>
+  <div class="card" style="background:var(--green-light)">
+    <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px">📲 איך להתקין על הטלפון</div>
+    <div style="font-size:12px;color:var(--green);line-height:1.7"><strong>iPhone:</strong> Safari ← כפתור שיתוף ← "הוסף למסך הבית"<br><strong>Android:</strong> Chrome ← תפריט ⋮ ← "הוסף למסך הבית"</div>
+  </div>
+  <button class="btn btn-danger" onclick="logout()" style="margin-top:16px">יציאה מהחשבון</button>
+</div>
+```
+
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">בית</span>
+      <div class="nav-dot"></div>
+    </button>
+    <button class="nav-item" id="nav-issues" onclick="switchTab('issues')">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">תקלות</span>
+    </button>
+    <button class="nav-item" id="nav-suppliers" onclick="switchTab('suppliers')">
+      <span class="nav-icon">👥</span>
+      <span class="nav-label">ספקים</span>
+    </button>
+    <button class="nav-item" id="nav-payments" onclick="switchTab('payments')">
+      <span class="nav-icon">💰</span>
+      <span class="nav-label">תשלומים</span>
+    </button>
+    <button class="nav-item" id="nav-settings" onclick="switchTab('settings')">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">הגדרות</span>
+    </button>
+  </div>
+</div>
+
+<!-- ==================== TENANT APP ==================== -->
+
+<div class="app-shell" id="app-tenant">
+  <div class="top-bar">
+    <div>
+      <div class="top-bar-title">🏠 דייר</div>
+      <div class="top-bar-sub">בניין רמב"ם 12</div>
+    </div>
+    <div class="avatar" onclick="logout()">יצ</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:18px;-webkit-overflow-scrolling:touch">
+    <button class="report-btn" onclick="openModal('modal-tenant-issue')">
+      <span style="font-size:28px">📢</span> דווח תקלה חדשה
+    </button>
+
+```
+<div style="font-size:15px;font-weight:800;margin-bottom:12px">📋 התקלות שלי</div>
+<div id="tenant-issues-list"></div>
+
+<div style="text-align:center;margin-top:24px">
+  <button class="btn btn-secondary" onclick="logout()" style="width:auto;padding:10px 24px;font-size:14px">יציאה ↩</button>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ==================== ISSUE DETAIL ==================== -->
+
+<div class="app-shell" id="app-issue-detail">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">◄</button>
+    <div>
+      <div class="detail-title" id="detail-title">פרטי תקלה</div>
+      <div class="detail-sub" id="detail-sub"></div>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch" id="detail-body"></div>
+</div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- New Issue (Admin) -->
+
+<div class="modal-overlay" id="modal-new-issue">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📋 תקלה חדשה</div>
+    <div class="form-group">
+      <label class="form-label">נושא התקלה *</label>
+      <input class="form-input" id="ni-title" placeholder="לדוגמה: רטיבות בתקרה">
+    </div>
+    <div class="form-group">
+      <label class="form-label">מיקום בבניין</label>
+      <select class="form-select" id="ni-location">
+        <option>כניסה ראשית</option><option>כניסה B</option><option>מעלית</option>
+        <option>חניון</option><option>גג</option><option>מרתף</option><option>גינה</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">תיאור</label>
+      <textarea class="form-input" id="ni-desc" placeholder="תאר את הבעיה..."></textarea>
+    </div>
+    <button class="photo-btn" onclick="showToast('📷 פותח מצלמה...')">📷 צרף תמונה</button>
+    <button class="btn btn-primary" onclick="addIssue()">📤 שמור תקלה</button>
+    <button class="btn btn-secondary" onclick="closeModal('modal-new-issue')">ביטול</button>
+  </div>
+</div>
+
+<!-- Tenant Issue -->
+
+<div class="modal-overlay" id="modal-tenant-issue">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📢 דיווח תקלה</div>
+    <div class="form-group">
+      <label class="form-label">נושא התקלה *</label>
+      <input class="form-input" id="ti-title" placeholder="לדוגמה: ברז דולף">
+    </div>
+    <div class="form-group">
+      <label class="form-label">מיקום</label>
+      <select class="form-select" id="ti-location">
+        <option>כניסה ראשית</option><option>כניסה B</option><option>מעלית</option>
+        <option>חניון</option><option>גג</option><option>מרתף</option><option>גינה</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">תיאור</label>
+      <textarea class="form-input" id="ti-desc" placeholder="תאר את הבעיה..."></textarea>
+    </div>
+    <button class="photo-btn" onclick="showToast('📷 פותח מצלמה...')">📷 צרף תמונה</button>
+    <button class="btn btn-primary" onclick="addTenantIssue()">📤 שלח דיווח</button>
+    <button class="btn btn-secondary" onclick="closeModal('modal-tenant-issue')">ביטול</button>
+  </div>
+</div>
+
+<!-- New Payment -->
+
+<div class="modal-overlay" id="modal-new-payment">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💰 תשלום חדש</div>
+    <div class="form-group">
+      <label class="form-label">ספק</label>
+      <select class="form-select" id="np-supplier">
+        <option>נקיון הבניין בע״מ</option><option>יוסי האינסטלטור</option>
+        <option>טכנאי מעליות פז</option><option>גינון ירוק</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">סכום (₪)</label>
+      <input class="form-input" id="np-amount" type="number" placeholder="0">
+    </div>
+    <div class="form-group">
+      <label class="form-label">אמצעי תשלום</label>
+      <select class="form-select" id="np-method">
+        <option>העברה בנקאית</option><option>מזומן</option><option>צ׳ק</option><option>אשראי</option>
+      </select>
+    </div>
+    <button class="photo-btn" style="margin-bottom:14px" onclick="showToast('📷 פותח מצלמה לחשבונית...')">📸 צלם חשבונית</button>
+    <button class="btn btn-primary" onclick="addPayment()">💾 שמור תשלום</button>
+    <button class="btn btn-secondary" onclick="closeModal('modal-new-payment')">ביטול</button>
+  </div>
+</div>
+
+<!-- New Supplier -->
+
+<div class="modal-overlay" id="modal-new-supplier">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">👥 ספק חדש</div>
+    <div class="form-group">
+      <label class="form-label">שם הספק / חברה</label>
+      <input class="form-input" id="ns-name" placeholder="לדוגמה: יוסי האינסטלטור">
+    </div>
+    <div class="form-group">
+      <label class="form-label">תחום שירות</label>
+      <select class="form-select" id="ns-service">
+        <option>אינסטלציה</option><option>חשמל</option><option>ניקיון</option>
+        <option>מעליות</option><option>גינון</option><option>אחר</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">טלפון</label>
+      <input class="form-input" id="ns-phone" type="tel" placeholder="050-0000000">
+    </div>
+    <div class="form-group">
+      <label class="form-label">תנאי תשלום</label>
+      <input class="form-input" id="ns-terms" placeholder="שוטף+30 / מזומן">
+    </div>
+    <button class="btn btn-primary" onclick="addSupplier()">💾 שמור ספק</button>
+    <button class="btn btn-secondary" onclick="closeModal('modal-new-supplier')">ביטול</button>
+  </div>
+</div>
+
+<!-- Change Admin Password -->
+
+<div class="modal-overlay" id="modal-change-pass">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔑 שנה סיסמת אדמין</div>
+    <div class="form-group">
+      <label class="form-label">סיסמה נוכחית</label>
+      <input class="form-input" type="password" id="cp-current">
+    </div>
+    <div class="form-group">
+      <label class="form-label">סיסמה חדשה</label>
+      <input class="form-input" type="password" id="cp-new">
+    </div>
+    <div class="form-group">
+      <label class="form-label">אישור סיסמה חדשה</label>
+      <input class="form-input" type="password" id="cp-confirm">
+    </div>
+    <div class="login-error" id="cp-error"></div>
+    <button class="btn btn-primary" onclick="changeAdminPass()">💾 שמור סיסמה</button>
+    <button class="btn btn-secondary" onclick="closeModal('modal-change-pass')">ביטול</button>
+  </div>
+</div>
+
+<!-- Change Tenant Password -->
+
+<div class="modal-overlay" id="modal-change-tenant-pass">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🏠 שנה סיסמת דיירים</div>
+    <div style="background:var(--yellow-light);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--yellow);font-weight:600">
+      ⚠️ שנוי הסיסמה ישפיע על כל הדיירים. עדכן אותם!
+    </div>
+    <div class="form-group">
+      <label class="form-label">סיסמת דיירים חדשה</label>
+      <input class="form-input" type="password" id="tp-new">
+    </div>
+    <div class="form-group">
+      <label class="form-label">אישור</label>
+      <input class="form-input" type="password" id="tp-confirm">
+    </div>
+    <button class="btn btn-primary" onclick="changeTenantPass()">💾 עדכן סיסמה</button>
+    <button class="btn btn-secondary" onclick="closeModal('modal-change-tenant-pass')">ביטול</button>
+  </div>
+</div>
+
+<!-- Building Info -->
+
+<div class="modal-overlay" id="modal-building">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🏢 פרטי הבניין</div>
+    <div class="form-group">
+      <label class="form-label">שם הבניין / כתובת</label>
+      <input class="form-input" id="b-name" value="רמב"מ 12, תל אביב">
+    </div>
+    <div class="form-group">
+      <label class="form-label">מספר דירות</label>
+      <input class="form-input" id="b-units" type="number" value="24">
+    </div>
+    <button class="btn btn-primary" onclick="saveBuilding()">💾 שמור</button>
+    <button class="btn btn-secondary" onclick="closeModal('modal-building')">ביטול</button>
+  </div>
+</div>
+
+<script>
+// ==================== STATE ====================
+let state = {
+  adminPass: localStorage.getItem('adminPass') || 'vaad2024',
+  tenantPass: localStorage.getItem('tenantPass') || 'diur2024',
+  currentRole: null,
+  previousScreen: null,
+  issues: JSON.parse(localStorage.getItem('issues') || 'null') || [
+    { id:1, title:'רטיבות בתקרת הכניסה', location:'כניסה ראשית', status:'open', reporter:'דן כהן', apt:'4', date:'28/04/2026', desc:'כתם רטיבות גדול ליד הנורה' },
+    { id:2, title:'מעלית תקועה בקומה 3', location:'מעלית', status:'in_progress', reporter:'שרה לוי', apt:'12', date:'26/04/2026', desc:'המעלית לא עולה לקומה 3', supplier:'טכנאי מעליות פז' },
+    { id:3, title:'נורה שרופה בחניון', location:'חניון', status:'closed', reporter:'רון מזרחי', apt:'7', date:'20/04/2026', desc:'נורה שרופה בכניסה לחניון', cost:'85' },
+    { id:4, title:'ברז דולף ליד תיבות הדואר', location:'כניסה ראשית', status:'open', reporter:'מיכל גל', apt:'2', date:'29/04/2026', desc:'ברז קטן דולף ליצור שלולית' },
+  ],
+  suppliers: JSON.parse(localStorage.getItem('suppliers') || 'null') || [
+    { id:1, name:'יוסי האינסטלטור', service:'אינסטלציה', phone:'050-1234567', terms:'שוטף+30' },
+    { id:2, name:'נקיון הבניין בע״מ', service:'ניקיון', phone:'054-9876543', terms:'מזומן' },
+    { id:3, name:'טכנאי מעליות פז', service:'מעליות', phone:'052-3456789', terms:'שוטף+60' },
+    { id:4, name:'גינון ירוק', service:'גינון', phone:'053-1122334', terms:'מזומן' },
+  ],
+  payments: JSON.parse(localStorage.getItem('payments') || 'null') || [
+    { id:1, supplier:'נקיון הבניין בע״מ', amount:800, date:'28/04/2026', method:'העברה' },
+    { id:2, supplier:'טכנאי מעליות פז', amount:1800, date:'25/04/2026', method:'שוטף+60' },
+    { id:3, supplier:'גינון ירוק', amount:550, date:'20/04/2026', method:'מזומן' },
+    { id:4, supplier:'יוסי האינסטלטור', amount:320, date:'15/04/2026', method:'העברה' },
+  ],
+  issueFilter: 'all',
+  viewingIssue: null,
+};
+
+const statusLabel = { open:'פתוחה', in_progress:'בטיפול', closed:'סגורה' };
+const statusClass = { open:'open', in_progress:'progress', closed:'closed' };
+const serviceIcon = { 'אינסטלציה':'🔧','ניקיון':'✨','מעליות':'🛗','גינון':'🌿','חשמל':'⚡','אחר':'🔨' };
+
+function save() {
+  localStorage.setItem('issues', JSON.stringify(state.issues));
+  localStorage.setItem('suppliers', JSON.stringify(state.suppliers));
+  localStorage.setItem('payments', JSON.stringify(state.payments));
+  localStorage.setItem('adminPass', state.adminPass);
+  localStorage.setItem('tenantPass', state.tenantPass);
+}
+
+// ==================== LOGIN ====================
+let selectedRole = null;
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('role-admin').classList.toggle('selected', role==='admin');
+  document.getElementById('role-tenant').classList.toggle('selected', role==='tenant');
+  const lbl = role==='admin' ? 'סיסמת ועד בית' : 'סיסמת דיירים';
+  document.getElementById('pass-label').textContent = lbl;
+  document.getElementById('password-input').style.display = 'block';
+  document.getElementById('password-input').placeholder = '••••••••';
+  document.getElementById('login-btn').style.display = 'block';
+  document.getElementById('password-input').focus();
+}
+
+function doLogin() {
+  const pass = document.getElementById('password-input').value;
+  const err = document.getElementById('login-error');
+  if (selectedRole === 'admin' && pass === state.adminPass) {
+    state.currentRole = 'admin';
+    showAdminApp();
+  } else if (selectedRole === 'tenant' && pass === state.tenantPass) {
+    state.currentRole = 'tenant';
+    showTenantApp();
+  } else {
+    err.classList.add('show');
+    document.getElementById('password-input').value = '';
+    setTimeout(() => err.classList.remove('show'), 3000);
+  }
+}
+
+document.getElementById('password-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// ==================== SCREENS ====================
+function showScreen(id) {
+  document.querySelectorAll('.screen,.app-shell').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showAdminApp() {
+  showScreen('app-admin');
+  renderAll();
+  switchTab('home');
+}
+
+function showTenantApp() {
+  showScreen('app-tenant');
+  renderTenantIssues();
+}
+
+function logout() {
+  selectedRole = null;
+  document.getElementById('password-input').value = '';
+  document.getElementById('password-input').style.display = 'none';
+  document.getElementById('login-btn').style.display = 'none';
+  document.getElementById('role-admin').classList.remove('selected');
+  document.getElementById('role-tenant').classList.remove('selected');
+  showScreen('screen-login');
+}
+
+// ==================== TABS ====================
+function switchTab(tab) {
+  ['home','issues','suppliers','payments','settings'].forEach(t => {
+    document.getElementById('page-'+t).style.display = t===tab ? 'block' : 'none';
+    const nav = document.getElementById('nav-'+t);
+    if(nav) {
+      nav.classList.toggle('active', t===tab);
+      const dot = nav.querySelector('.nav-dot');
+      if(dot) dot.style.display = t===tab ? 'block' : 'none';
+    }
+  });
+  if(tab==='issues') renderIssues(state.issueFilter);
+}
+
+// ==================== RENDER ====================
+function renderAll() {
+  renderHomeIssues();
+  renderIssues('all');
+  renderSuppliers();
+  renderPayments();
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('stat-open').textContent = state.issues.filter(i=>i.status==='open').length;
+  document.getElementById('stat-prog').textContent = state.issues.filter(i=>i.status==='in_progress').length;
+  const total = state.payments.reduce((s,p)=>s+p.amount,0);
+  document.getElementById('stat-money').textContent = '₪'+total.toLocaleString();
+}
+
+function issueCardHTML(issue, role) {
+  return `<div class="issue-card" onclick="viewIssue(${issue.id})">
+    <div class="issue-info">
+      <div class="issue-title">${issue.title}</div>
+      <div class="issue-meta">📍 ${issue.location}${role==='admin' ? ` · דייר: ${issue.reporter}` : ''} · ${issue.date}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <span class="badge badge-${statusClass[issue.status]}">${statusLabel[issue.status]}</span>
+      <span class="issue-arrow">←</span>
+    </div>
+  </div>`;
+}
+
+function renderHomeIssues() {
+  const container = document.getElementById('home-issues-list');
+  const recent = state.issues.filter(i=>i.status!=='closed').slice(0,3);
+  container.innerHTML = recent.length ? recent.map(i=>issueCardHTML(i,'admin')).join('') : '<div style="text-align:center;padding:20px;color:var(--sub);font-size:14px">🎉 אין תקלות פתוחות!</div>';
+}
+
+function renderIssues(filter) {
+  state.issueFilter = filter;
+  const filtered = filter==='all' ? state.issues : state.issues.filter(i=>i.status===filter);
+  document.getElementById('issues-list').innerHTML = filtered.length ? filtered.map(i=>issueCardHTML(i,'admin')).join('') : '<div style="text-align:center;padding:30px;color:var(--sub)">אין תקלות</div>';
+}
+
+function filterIssues(filter, btn) {
+  document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderIssues(filter);
+}
+
+function renderSuppliers() {
+  document.getElementById('suppliers-list').innerHTML = state.suppliers.map(s=>`
+    <div class="supplier-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div class="supplier-name">${serviceIcon[s.service]||'🔨'} ${s.name}</div>
+        <span class="chip">${s.service}</span>
+      </div>
+      <div class="supplier-service">📞 ${s.phone} · ${s.terms}</div>
+      <div class="supplier-actions">
+        <button class="supplier-btn supplier-btn-call" onclick="showToast('📞 מתקשר ל-${s.phone}...')">📞 התקשר</button>
+        <button class="supplier-btn supplier-btn-pay" onclick="openModal('modal-new-payment')">+ תשלום</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderPayments() {
+  document.getElementById('payments-list').innerHTML = state.payments.map(p=>`
+    <div class="payment-card">
+      <div>
+        <div style="font-size:14px;font-weight:700">${p.supplier}</div>
+        <div style="font-size:12px;color:var(--sub);margin-top:2px">${p.date} · ${p.method}</div>
+      </div>
+      <div class="payment-amount">₪${p.amount.toLocaleString()}</div>
+    </div>`).join('');
+}
+
+function renderTenantIssues() {
+  const myIssues = state.issues.slice(0,3);
+  document.getElementById('tenant-issues-list').innerHTML = myIssues.length ?
+    myIssues.map(i=>issueCardHTML(i,'tenant')).join('') :
+    '<div style="text-align:center;padding:30px;color:var(--sub);font-size:14px">🎉 אין תקלות פתוחות</div>';
+}
+
+// ==================== ISSUE DETAIL ====================
+function viewIssue(id) {
+  const issue = state.issues.find(i=>i.id===id);
+  if(!issue) return;
+  state.viewingIssue = id;
+  state.previousScreen = state.currentRole==='admin' ? 'app-admin' : 'app-tenant';
+
+  document.getElementById('detail-title').textContent = issue.title;
+  document.getElementById('detail-sub').textContent = issue.location + ' · ' + issue.date;
+
+  let html = `<div class="card">
+    <div class="info-row"><span class="info-icon">👤</span><span class="info-label">מדווח</span><span class="info-val">${issue.reporter}</span></div>
+    <div class="info-row"><span class="info-icon">📍</span><span class="info-label">מיקום</span><span class="info-val">${issue.location}</span></div>
+    <div class="info-row"><span class="info-icon">📅</span><span class="info-label">תאריך</span><span class="info-val">${issue.date}</span></div>
+    <div class="info-row"><span class="info-icon">📝</span><span class="info-label">תיאור</span><span class="info-val">${issue.desc||'—'}</span></div>
+    ${issue.supplier ? `<div class="info-row"><span class="info-icon">🔧</span><span class="info-label">ספק</span><span class="info-val">${issue.supplier}</span></div>`:''}
+    ${issue.cost ? `<div class="info-row"><span class="info-icon">💰</span><span class="info-label">עלות</span><span class="info-val">₪${issue.cost}</span></div>`:''}
+  </div>`;
+
+  if(state.currentRole==='admin') {
+    html += `<div class="card">
+      <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:10px">עדכון סטטוס</div>
+      <div class="status-btns">
+        <button class="status-btn open ${issue.status==='open'?'sel':''}" onclick="setStatus(${id},'open',this)">פתוחה</button>
+        <button class="status-btn progress ${issue.status==='in_progress'?'sel':''}" onclick="setStatus(${id},'in_progress',this)">בטיפול</button>
+        <button class="status-btn closed ${issue.status==='closed'?'sel':''}" onclick="setStatus(${id},'closed',this)">סגורה</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:10px">פרטי טיפול</div>
+      <label class="form-label">עלות טיפול (₪)</label>
+      <input class="form-input" id="det-cost" value="${issue.cost||''}" placeholder="0" type="number" style="margin-bottom:12px">
+      <label class="form-label">הערה / תיעוד</label>
+      <textarea class="form-input" id="det-note" placeholder="מה בוצע...">${issue.note||''}</textarea>
+
+```
+</div>
+<button class="photo-btn" style="margin-bottom:12px" onclick="showToast('📷 פותח מצלמה...')">📷 הוסף תמונה אחרי תיקון</button>
+<button class="btn btn-primary" onclick="saveDetail(${id})">💾 שמור עדכון</button>`;
+```
+
+}
+
+document.getElementById(‘detail-body’).innerHTML = html;
+showScreen(‘app-issue-detail’);
+}
+
+function setStatus(id, status, btn) {
+const issue = state.issues.find(i=>i.id===id);
+if(issue) issue.status = status;
+document.querySelectorAll(’.status-btn’).forEach(b=>b.classList.remove(‘sel’));
+btn.classList.add(‘sel’);
+}
+
+function saveDetail(id) {
+const issue = state.issues.find(i=>i.id===id);
+if(issue) {
+issue.cost = document.getElementById(‘det-cost’)?.value || issue.cost;
+issue.note = document.getElementById(‘det-note’)?.value || issue.note;
+}
+save();
+closeDetail();
+renderAll();
+showToast(‘✅ התקלה עודכנה!’);
+}
+
+function closeDetail() {
+showScreen(state.previousScreen || ‘app-admin’);
+renderAll();
+}
+
+// ==================== ADD DATA ====================
+function addIssue() {
+const title = document.getElementById(‘ni-title’).value.trim();
+if(!title) { showToast(‘❌ הכנס נושא לתקלה’); return; }
+const today = new Date().toLocaleDateString(‘he-IL’);
+state.issues.unshift({ id: Date.now(), title, location: document.getElementById(‘ni-location’).value, status:‘open’, reporter:‘ועד בית’, apt:’—’, date:today, desc: document.getElementById(‘ni-desc’).value });
+save(); renderAll(); closeModal(‘modal-new-issue’);
+document.getElementById(‘ni-title’).value = ‘’; document.getElementById(‘ni-desc’).value = ‘’;
+showToast(‘✅ התקלה נשמרה!’);
+}
+
+function addTenantIssue() {
+const title = document.getElementById(‘ti-title’).value.trim();
+if(!title) { showToast(‘❌ הכנס נושא לתקלה’); return; }
+const today = new Date().toLocaleDateString(‘he-IL’);
+state.issues.unshift({ id: Date.now(), title, location: document.getElementById(‘ti-location’).value, status:‘open’, reporter:‘דייר’, apt:’—’, date:today, desc: document.getElementById(‘ti-desc’).value });
+save(); closeModal(‘modal-tenant-issue’); renderTenantIssues();
+document.getElementById(‘ti-title’).value = ‘’; document.getElementById(‘ti-desc’).value = ‘’;
+showToast(‘✅ הדיווח נשלח לוועד!’);
+}
+
+function addPayment() {
+const amount = parseFloat(document.getElementById(‘np-amount’).value);
+if(!amount) { showToast(‘❌ הכנס סכום’); return; }
+const today = new Date().toLocaleDateString(‘he-IL’);
+state.payments.unshift({ id: Date.now(), supplier: document.getElementById(‘np-supplier’).value, amount, date:today, method: document.getElementById(‘np-method’).value });
+save(); renderAll(); closeModal(‘modal-new-payment’);
+document.getElementById(‘np-amount’).value = ‘’;
+showToast(‘✅ התשלום נרשם!’);
+}
+
+function addSupplier() {
+const name = document.getElementById(‘ns-name’).value.trim();
+if(!name) { showToast(‘❌ הכנס שם ספק’); return; }
+state.suppliers.push({ id: Date.now(), name, service: document.getElementById(‘ns-service’).value, phone: document.getElementById(‘ns-phone’).value, terms: document.getElementById(‘ns-terms’).value });
+save(); renderAll(); closeModal(‘modal-new-supplier’);
+document.getElementById(‘ns-name’).value = ‘’; document.getElementById(‘ns-phone’).value = ‘’;
+showToast(‘✅ הספק נוסף!’);
+}
+
+// ==================== SETTINGS ====================
+function changeAdminPass() {
+const cur = document.getElementById(‘cp-current’).value;
+const nw = document.getElementById(‘cp-new’).value;
+const conf = document.getElementById(‘cp-confirm’).value;
+const err = document.getElementById(‘cp-error’);
+if(cur !== state.adminPass) { err.textContent=‘❌ הסיסמה הנוכחית שגויה’; err.classList.add(‘show’); return; }
+if(nw !== conf) { err.textContent=‘❌ הסיסמות אינן תואמות’; err.classList.add(‘show’); return; }
+if(nw.length < 4) { err.textContent=‘❌ הסיסמה קצרה מדי’; err.classList.add(‘show’); return; }
+state.adminPass = nw; save();
+closeModal(‘modal-change-pass’);
+document.getElementById(‘cp-current’).value=’’; document.getElementById(‘cp-new’).value=’’; document.getElementById(‘cp-confirm’).value=’’;
+showToast(‘✅ סיסמת האדמין עודכנה!’);
+}
+
+function changeTenantPass() {
+const nw = document.getElementById(‘tp-new’).value;
+const conf = document.getElementById(‘tp-confirm’).value;
+if(nw !== conf) { showToast(‘❌ הסיסמות אינן תואמות’); return; }
+if(nw.length < 4) { showToast(‘❌ הסיסמה קצרה מדי’); return; }
+state.tenantPass = nw; save();
+closeModal(‘modal-change-tenant-pass’);
+showToast(‘✅ סיסמת הדיירים עודכנה!’);
+}
+
+function saveBuilding() {
+closeModal(‘modal-building’);
+showToast(‘✅ פרטי הבניין נשמרו!’);
+}
+
+// ==================== MODAL / TOAST ====================
+function openModal(id) { document.getElementById(id).classList.add(‘open’); }
+function closeModal(id) { document.getElementById(id).classList.remove(‘open’); }
+document.querySelectorAll(’.modal-overlay’).forEach(m => {
+m.addEventListener(‘click’, e => { if(e.target===m) m.classList.remove(‘open’); });
+});
+
+let toastTimer;
+function showToast(msg) {
+const t = document.getElementById(‘toast’);
+t.textContent = msg; t.classList.add(‘show’);
+clearTimeout(toastTimer);
+toastTimer = setTimeout(()=>t.classList.remove(‘show’), 2500);
+}
+
+// ==================== INIT ====================
+renderAll();
+</script>
+
+</body>
+</html>
